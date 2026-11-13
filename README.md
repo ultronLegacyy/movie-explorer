@@ -1,10 +1,9 @@
-# Netflis
+# Movie Explorer
 
 Explorador de películas y series hecho con **React** (JavaScript, HTML y CSS) y **Vite**.
 
-No usa backend ni API: el catálogo es un arreglo de objetos en `src/data/catalogo.js` y las imágenes
-están dentro del proyecto, en `public/imagenes/`. Son fotografías de dominio público o CC0 (ver
-[`public/imagenes/CREDITOS.md`](public/imagenes/CREDITOS.md)).
+No usa backend ni API: el catálogo es un arreglo de objetos en `src/data/catalogo.js` y los pósters
+son imágenes locales en `public/posters/`.
 
 ## Instalación y ejecución
 
@@ -22,7 +21,7 @@ Abre http://localhost:5173. Para generar la versión final: `npm run build`.
 ## Estructura
 
 ```
-public/imagenes/     Imagen (JPG 16:9) de cada título y sus créditos
+public/posters/      Pósters (SVG) de cada título
 src/
 ├── data/catalogo.js Catálogo: 20 películas y series
 ├── App.jsx          Página principal y componente Tarjeta

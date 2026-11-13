@@ -1,7 +1,7 @@
 // Catálogo de películas y series: un arreglo de objetos.
 //
 // Cada objeto tiene:
-//   id          identificador único (también es el nombre de la imagen)
+//   id          identificador único (también es el nombre del póster)
 //   type        'movie' (película) o 'series' (serie)
 //   title       título
 //   genres      lista de géneros; el primero es el principal
@@ -9,7 +9,7 @@
 //   durationMin duración en minutos (solo películas)
 //   seasons     número de temporadas (solo series)
 //   synopsis    sinopsis breve
-//   imagen      ruta de la imagen 16:9 (carpeta public/imagenes)
+//   poster      ruta de la imagen (carpeta public/posters)
 
 const catalogo = [
   {
@@ -212,6 +212,6 @@ const catalogo = [
     synopsis:
       'El heredero de una casa noble llega a Arrakis, un planeta desértico en disputa por su recurso más valioso.',
   },
-].map((item) => ({ ...item, imagen: `/imagenes/${item.id}.jpg` }))
+].map((item) => ({ ...item, poster: `/posters/${item.id}.svg` }))
 
 export default catalogo
