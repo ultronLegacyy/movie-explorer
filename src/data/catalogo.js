@@ -1,7 +1,7 @@
 // Catálogo de películas y series: un arreglo de objetos.
 //
 // Cada objeto tiene:
-//   id          identificador único (también es el nombre de la imagen)
+//   id          identificador único (también es el nombre del póster)
 //   type        'movie' (película) o 'series' (serie)
 //   title       título
 //   genres      lista de géneros; el primero es el principal
@@ -9,7 +9,7 @@
 //   durationMin duración en minutos (solo películas)
 //   seasons     número de temporadas (solo series)
 //   synopsis    sinopsis breve
-//   imagen      ruta de la imagen 16:9 (carpeta public/imagenes)
+//   imagen      ruta de la foto (carpeta public/imagenes)
 
 const catalogo = [
   {
