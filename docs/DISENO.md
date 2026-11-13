@@ -1,4 +1,4 @@
-# Diseño elegido: vista estilo streaming
+# Diseño elegido para Netflis: vista estilo streaming
 
 Elegimos una vista inspirada en las plataformas de streaming (tipo Netflix): un banner destacado,
 filas horizontales por categoría y el detalle en una ventana modal.
@@ -7,8 +7,8 @@ filas horizontales por categoría y el detalle en una ventana modal.
 clic en el archivo). La primera versión sigue en [`boceto-streaming.html`](boceto-streaming.html) para
 comparar. Es interactivo, así que puedes buscar, filtrar, abrir el detalle y guardar en Mi lista.
 
-> Tomamos la estructura de Netflix, pero no su marca: no usamos su nombre, su logo ni su rojo. La
-> app se llama *Movie Explorer* y su color de acento es ámbar.
+> La app se llama **Netflis**. Tomamos la estructura de Netflix, pero no su logo ni su rojo: el
+> nombre va en texto con el color ámbar de la marquesina.
 
 ## Partes de la página
 
@@ -39,11 +39,11 @@ Los favoritos se guardan en `localStorage` para que no se pierdan al recargar.
 
 ## Cambios en los datos
 
-- Las tarjetas y el banner usan imágenes **horizontales 16:9**. Hay que generar
-  `public/banners/<id>.svg` y agregar el campo `banner` a cada título en `src/data/catalogo.js`.
-- La fila de Películas usa los pósters verticales 2:3 de `public/posters/`.
-- Pósters y banners se generan con un **motivo por género principal** (ver tabla de abajo), así cada
-  título se distingue sin usar imágenes con derechos de autor.
+- Cada título tiene una **fotografía real 16:9** en `public/imagenes/<id>.jpg` y el campo `imagen` en
+  `src/data/catalogo.js`. Son fotos de dominio público o CC0 (no pósters oficiales); los créditos
+  están en `public/imagenes/CREDITOS.md`.
+- La misma imagen sirve para las tarjetas, el banner y el modal. Para la fila de Películas en 2:3 se
+  recorta con CSS: `aspect-ratio: 2 / 3; object-fit: cover;`.
 - Todo lo demás (`title`, `type`, `genres`, `year`, `durationMin`, `seasons`, `synopsis`) ya existe.
 
 ## Estilo (v2)
@@ -63,7 +63,10 @@ resto de la página es sobrio.
 | Logo y banner        | Big Shoulders Display, en mayúsculas                   |
 | Todo lo demás        | Instrument Sans, en minúsculas normales                |
 
-### Motivo de las imágenes por género
+### Motivo de las imágenes por género (solo en el boceto)
+
+El boceto usa imágenes generadas como relleno. En la app se usan las fotografías reales de
+`public/imagenes/`.
 
 | Género principal               | Motivo                                  |
 | ------------------------------ | --------------------------------------- |

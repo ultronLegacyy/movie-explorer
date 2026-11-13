@@ -27,12 +27,10 @@ body {
 
 .logo {
   margin: 0;
-  font-size: 26px;
+  font-size: 28px;
+  font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-}
-
-.logo b {
   color: var(--acento);
 }
 
@@ -52,7 +50,7 @@ body {
 .cuadricula {
   display: grid;
   gap: 22px 16px;
-  grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
 }
 
 .tarjeta {
@@ -64,7 +62,7 @@ body {
 .tarjeta img {
   width: 100%;
   height: auto;
-  aspect-ratio: 2 / 3;
+  aspect-ratio: 16 / 9;
   object-fit: cover;
   border-radius: 8px;
   background: var(--superficie);
@@ -81,8 +79,8 @@ body {
   color: var(--texto-suave);
 }
 
-@media (max-width: 420px) {
+@media (max-width: 480px) {
   .cuadricula {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
   }
 }
