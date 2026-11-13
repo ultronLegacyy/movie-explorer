@@ -1,0 +1,88 @@
+:root {
+  color-scheme: dark;
+  --fondo: #0e1320;
+  --superficie: #171e2e;
+  --borde: #232c40;
+  --texto: #ece8df;
+  --texto-suave: #98a1b3;
+  --acento: #f0b13c;
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--texto);
+}
+
+.barra {
+  background: var(--superficie);
+  border-bottom: 1px solid var(--borde);
+  padding: 14px 16px;
+}
+
+.logo {
+  margin: 0;
+  font-size: 26px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.logo b {
+  color: var(--acento);
+}
+
+.contenido {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 20px 16px 48px;
+}
+
+.conteo {
+  margin: 0 0 16px;
+  color: var(--texto-suave);
+  font-size: 14px;
+}
+
+/* Se adapta solo al ancho de la pantalla (diseño responsive). */
+.cuadricula {
+  display: grid;
+  gap: 22px 16px;
+  grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+}
+
+.tarjeta {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+
+.tarjeta img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 8px;
+  background: var(--superficie);
+}
+
+.tarjeta h3 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.tarjeta p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--texto-suave);
+}
+
+@media (max-width: 420px) {
+  .cuadricula {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
