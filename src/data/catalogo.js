@@ -9,7 +9,7 @@
 //   durationMin duración en minutos (solo películas)
 //   seasons     número de temporadas (solo series)
 //   synopsis    sinopsis breve
-//   poster      ruta de la imagen (carpeta public/posters)
+//   imagen      ruta de la foto (carpeta public/imagenes)
 
 const catalogo = [
   {
@@ -212,6 +212,6 @@ const catalogo = [
     synopsis:
       'El heredero de una casa noble llega a Arrakis, un planeta desértico en disputa por su recurso más valioso.',
   },
-].map((item) => ({ ...item, poster: `/posters/${item.id}.svg` }))
+].map((item) => ({ ...item, imagen: `/imagenes/${item.id}.jpg` }))
 
 export default catalogo
