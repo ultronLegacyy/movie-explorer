@@ -62,6 +62,11 @@ src/
 El estado vive en `App.jsx` con `useState` y baja a los componentes como props; los componentes avisan
 de los eventos (abrir un título, marcar favorito, cambiar de vista) con funciones que reciben por props.
 
+## Documentación
+
+- [`docs/DISENO.md`](docs/DISENO.md): partes de la interfaz, componentes, imágenes y estilo.
+- [`docs/GUION-DEMO.md`](docs/GUION-DEMO.md): guion para la demostración en clase.
+
 ## Cómo trabajamos
 
 - `main` está protegida: los cambios entran por Pull Request con la aprobación del otro integrante.
