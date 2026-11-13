@@ -9,5 +9,5 @@
   <circle cx="176" cy="10" r="19.3" fill="#e9d7a6" fill-opacity=".18"/>
   <line x1="24" x2="276" y1="344" y2="344" stroke="#ffffff" stroke-opacity=".3"/>
   <text x="24" y="40" fill="#ffffff" fill-opacity=".75" font-family="Arial Narrow, Roboto Condensed, sans-serif" font-size="13" letter-spacing="3">PELÍCULA · 2016</text>
-  <text fill="#ffffff" font-family="Arial Narrow, Roboto Condensed, Helvetica, sans-serif" font-weight="700" font-size="38" letter-spacing="1"><tspan x="24" y="400">LA LA LAND</tspan></text>
+  <text fill="#ffffff" font-family="Arial Narrow, Roboto Condensed, Helvetica, sans-serif" font-weight="700" font-size="36" letter-spacing="1"><tspan x="24" y="400">LA LA LAND</tspan></text>
 </svg>
