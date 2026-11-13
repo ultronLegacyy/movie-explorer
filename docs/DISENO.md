@@ -3,8 +3,9 @@
 Elegimos una vista inspirada en las plataformas de streaming (tipo Netflix): un banner destacado,
 filas horizontales por categoría y el detalle en una ventana modal.
 
-**Para verlo:** abre [`boceto-streaming.html`](boceto-streaming.html) en el navegador (doble clic
-en el archivo). Es interactivo, así que puedes buscar, filtrar, abrir el detalle y guardar en Mi lista.
+**Para verlo:** abre [`boceto-streaming-v2.html`](boceto-streaming-v2.html) en el navegador (doble
+clic en el archivo). La primera versión sigue en [`boceto-streaming.html`](boceto-streaming.html) para
+comparar. Es interactivo, así que puedes buscar, filtrar, abrir el detalle y guardar en Mi lista.
 
 > Tomamos la estructura de Netflix, pero no su marca: no usamos su nombre, su logo ni su rojo. La
 > app se llama *Movie Explorer* y su color de acento es ámbar.
@@ -39,22 +40,48 @@ Los favoritos se guardan en `localStorage` para que no se pierdan al recargar.
 ## Cambios en los datos
 
 - Las tarjetas y el banner usan imágenes **horizontales 16:9**. Hay que generar
-  `public/banners/<id>.svg` (con el mismo estilo de los pósters) y agregar el campo `banner` a cada
-  título en `src/data/catalogo.js`.
+  `public/banners/<id>.svg` y agregar el campo `banner` a cada título en `src/data/catalogo.js`.
+- La fila de Películas usa los pósters verticales 2:3 de `public/posters/`.
+- Pósters y banners se generan con un **motivo por género principal** (ver tabla de abajo), así cada
+  título se distingue sin usar imágenes con derechos de autor.
 - Todo lo demás (`title`, `type`, `genres`, `year`, `durationMin`, `seasons`, `synopsis`) ya existe.
 
-## Estilo
+## Estilo (v2)
+
+La idea central es una **sala de cine**: el fondo es el terciopelo oscuro de la sala y el ámbar es la
+luz de la marquesina y del proyector. Lo único llamativo es el haz del proyector sobre el banner; el
+resto de la página es sobrio.
 
 | Uso                  | Valor                                                  |
 | -------------------- | ------------------------------------------------------ |
-| Fondo                | `#0b0e15`                                              |
-| Superficies (modal)  | `#161b27`                                              |
-| Bordes               | `#262e40`                                              |
-| Texto principal      | `#f1ede4`                                              |
-| Texto secundario     | `#9aa2b2`                                              |
-| Acento (Mi lista)    | `#f0b13c`                                              |
-| Títulos y logo       | Big Shoulders Display (Google Fonts)                   |
-| Texto                | Instrument Sans (Google Fonts)                         |
+| Fondo (sala)         | `#140e0d`                                              |
+| Superficies (butaca) | `#1f1715`                                              |
+| Bordes (pasillo)     | `#33261f`                                              |
+| Texto principal      | `#f3ebe0`                                              |
+| Texto secundario     | `#a89a8c` (contraste 7:1 sobre el fondo)               |
+| Luz (marquesina)     | `#f0b13c`: logo, haz del proyector, Mi lista           |
+| Logo y banner        | Big Shoulders Display, en mayúsculas                   |
+| Todo lo demás        | Instrument Sans, en minúsculas normales                |
 
-Tema oscuro, carriles con `overflow-x: auto` y `scroll-snap`, y la barra superior que pasa de
-transparente a sólida al hacer scroll.
+### Motivo de las imágenes por género
+
+| Género principal               | Motivo                                  |
+| ------------------------------ | --------------------------------------- |
+| Ciencia ficción                | Planeta con órbitas y estrellas         |
+| Aventura, Acción               | Dunas bajo un sol                       |
+| Crimen, Thriller               | Luz de persiana con una franja roja     |
+| Animación, Fantasía            | Formas suaves de colores                |
+| Misterio, Terror               | Luna, silueta, grano y viñeta           |
+| Comedia, Romance, Musical      | Bloques de color planos                 |
+| Drama, Historia                | Horizonte con un brillo                 |
+
+### Detalles
+
+- **Haz del proyector:** un cono de luz ámbar entra al banner desde la esquina superior izquierda y
+  se enciende una vez al cargar la página (se desactiva con "reducir movimiento").
+- **Mi lista:** cada título guardado lleva una cinta ámbar en la esquina, visible sin pasar el cursor.
+- **Tarjetas:** al pasar el cursor la imagen se ilumina y aparece la info; sin zoom ni sombras.
+- **Búsqueda:** por título o por género.
+- **Filas de género:** solo las que tienen 3 títulos o más.
+- Tema oscuro, carriles con `overflow-x: auto` y `scroll-snap`, y la barra superior que pasa de
+  transparente a sólida al hacer scroll.

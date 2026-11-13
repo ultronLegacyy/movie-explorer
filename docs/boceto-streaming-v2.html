@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Movie Explorer Streaming v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+  /* Boceto v2. Idea central: la app es una sala de cine. El fondo es el terciopelo oscuro de la sala,
+     el ámbar es la luz de la marquesina y del proyector. Lo único llamativo es el haz del proyector
+     sobre el banner; todo lo demás es sobrio. */
+  :root {
+    color-scheme: dark;
+    --sala: #140e0d;       /* fondo: terciopelo oscuro */
+    --butaca: #1f1715;     /* superficies: modal, paneles, info de tarjeta */
+    --pasillo: #33261f;    /* bordes */
+    --pantalla: #f3ebe0;   /* texto principal */
+    --tenue: #a89a8c;      /* texto secundario (contraste 7:1 sobre el fondo) */
+    --marquesina: #f0b13c; /* luz: marca, proyector y Mi lista */
+    --display: 'Big Shoulders Display', 'Arial Narrow', 'Roboto Condensed', sans-serif;
+    --body: 'Instrument Sans', system-ui, 'Segoe UI', sans-serif;
+    --gutter-l: max(16px, env(safe-area-inset-left, 0px), 4vw);
+    --gutter-r: max(16px, env(safe-area-inset-right, 0px), 4vw);
+  }
+  * { box-sizing: border-box; }
+  html, body { overflow-x: hidden; }
+  body { margin: 0; background: var(--sala); color: var(--pantalla); font: 15px/1.5 var(--body); }
+  img { max-width: 100%; display: block; }
+  button { font: inherit; color: inherit; }
+  :is(button, input, select):focus-visible { outline: 2px solid var(--marquesina); outline-offset: 2px; }
+
+  /* Marcas de requisitos del PDF (solo para el boceto) */
+  .req { font: 600 11px/1 var(--body); color: var(--sala); background: var(--marquesina); border-radius: 3px; padding: 3px 5px; font-style: normal; white-space: nowrap; }
+  .sin-req .req { display: none; }
+
+  /* ── Barra superior ── */
+  .nav {
+    position: fixed; inset: 0 0 auto; z-index: 20;
+    padding: calc(env(safe-area-inset-top, 0px) + 14px) var(--gutter-r) 14px var(--gutter-l);
+    display: flex; align-items: center; gap: 12px 28px; flex-wrap: wrap;
+    background: linear-gradient(to bottom, rgb(20 14 13 / .92), rgb(20 14 13 / 0));
+    transition: background-color .25s ease;
+  }
+  .nav.solida { background: var(--sala); box-shadow: 0 1px 0 var(--pasillo); }
+  /* Logo como letrero de marquesina: un marco con focos arriba y abajo. */
+  .logo {
+    margin: 0; padding: 7px 12px 6px; font: 900 22px/1 var(--display); letter-spacing: .06em; text-transform: uppercase; white-space: nowrap;
+    border: 1.5px solid var(--marquesina); border-radius: 4px;
+    background:
+      radial-gradient(circle, var(--marquesina) 1.3px, transparent 1.9px) 3px 1px / 9px 5px repeat-x,
+      radial-gradient(circle, var(--marquesina) 1.3px, transparent 1.9px) 3px calc(100% - 1px) / 9px 5px repeat-x;
+  }
+  .links { display: flex; gap: 20px; align-items: center; }
+  .links button { background: none; border: 0; padding: 4px 0; color: var(--tenue); font-weight: 500; cursor: pointer; white-space: nowrap; border-bottom: 2px solid transparent; }
+  .links button:hover { color: var(--pantalla); }
+  .links button[aria-current="page"] { color: var(--pantalla); font-weight: 600; border-bottom-color: var(--marquesina); }
+  .derecha { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .buscador { display: flex; align-items: center; gap: 8px; border: 1px solid transparent; padding: 6px 8px; border-radius: 6px; transition: border-color .2s, background-color .2s; }
+  .buscador.abierto { border-color: var(--tenue); background: rgb(20 14 13 / .9); }
+  .buscador button { background: none; border: 0; padding: 0; display: grid; place-items: center; cursor: pointer; }
+  .buscador svg { width: 20px; height: 20px; }
+  .buscador input { width: 0; padding: 0; border: 0; background: none; color: var(--pantalla); font: 14px var(--body); outline: none; transition: width .25s ease; }
+  .buscador.abierto input { width: min(230px, 46vw); }
+  .buscador input::placeholder { color: var(--tenue); }
+
+  /* ── Banner destacado con el haz del proyector ── */
+  .hero { position: relative; min-height: clamp(460px, 54vw, 660px); display: grid; align-items: end; overflow: hidden; }
+  .hero > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .hero::before {
+    /* El haz: un cono de luz ámbar que entra desde la esquina superior izquierda, como desde la cabina. */
+    content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; mix-blend-mode: screen;
+    background:
+      radial-gradient(ellipse 60% 70% at 0% 0%, rgb(240 177 60 / .38), transparent 70%),
+      conic-gradient(from 105deg at -4% -10%, transparent 0deg, rgb(240 177 60 / .16) 8deg, rgb(240 177 60 / .07) 26deg, transparent 34deg);
+    transform-origin: 0 0;
+    animation: encender 1.6s cubic-bezier(.2, .7, .2, 1) both;
+  }
+  @keyframes encender {
+    0% { opacity: 0; transform: rotate(-4deg); }
+    35% { opacity: .55; }
+    45% { opacity: .3; }
+    100% { opacity: 1; transform: none; }
+  }
+  .hero::after {
+    content: ""; position: absolute; inset: 0;
+    background:
+      linear-gradient(to right, rgb(20 14 13 / .9) 0%, rgb(20 14 13 / .5) 40%, rgb(20 14 13 / 0) 72%),
+      linear-gradient(to top, var(--sala) 0%, rgb(20 14 13 / 0) 36%);
+  }
+  .hero-txt {
+    position: relative; z-index: 2; display: grid; gap: 16px; max-width: 640px;
+    padding: 120px var(--gutter-r) clamp(100px, 11vw, 150px) var(--gutter-l);
+  }
+  .hero h2 {
+    margin: 0; font: 900 clamp(56px, 9.5vw, 128px)/.86 var(--display); text-transform: uppercase; letter-spacing: .005em; text-wrap: balance;
+    text-shadow: 0 0 40px rgb(240 177 60 / .25);
+  }
+  .meta { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; color: var(--pantalla); font-size: 14px; }
+  .meta .pill { border: 1px solid var(--tenue); color: var(--pantalla); border-radius: 99px; padding: 1px 10px; font-size: 13px; }
+  .hero p { margin: 0; max-width: 46ch; font-size: 16.5px; color: var(--pantalla); text-shadow: 0 1px 8px rgb(0 0 0 / .6); }
+  .acciones { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 6px; padding: 11px 20px; font-weight: 600; font-size: 15px; cursor: pointer; }
+  .btn svg { width: 20px; height: 20px; }
+  .btn.claro { background: var(--pantalla); color: var(--sala); }
+  .btn.claro:hover { background: #fff; }
+  .btn.velo { background: rgb(168 154 140 / .26); color: var(--pantalla); }
+  .btn.velo:hover { background: rgb(168 154 140 / .4); }
+  .btn.velo[aria-pressed="true"] { background: rgb(240 177 60 / .16); color: var(--marquesina); }
+
+  /* ── Filas horizontales ── */
+  .filas { position: relative; z-index: 3; margin-top: clamp(-120px, -8vw, -60px); display: grid; gap: clamp(20px, 3vw, 36px); padding-bottom: 48px; }
+  .sin-hero .filas { margin-top: 0; }
+  .fila h3 { margin: 0 0 2px; padding: 0 var(--gutter-r) 0 var(--gutter-l); display: flex; align-items: baseline; gap: 10px; font: 600 clamp(17px, 1.6vw, 21px)/1.2 var(--body); }
+  .fila h3 small { font-size: 13px; font-weight: 500; color: var(--tenue); font-variant-numeric: tabular-nums; }
+  .carril { position: relative; }
+  .pista {
+    display: flex; gap: 8px; overflow-x: auto; overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory; scroll-padding-left: var(--gutter-l); scrollbar-width: none;
+    padding: 12px var(--gutter-r) 16px var(--gutter-l);
+  }
+  .pista::-webkit-scrollbar { display: none; }
+  .pista .card { flex: 0 0 clamp(200px, 19vw, 290px); scroll-snap-align: start; }
+  .pista.posters .card { flex-basis: clamp(132px, 12.5vw, 196px); }
+  .flecha {
+    position: absolute; top: 12px; bottom: 16px; z-index: 5; width: var(--gutter-l); min-width: 40px;
+    border: 0; background: rgb(20 14 13 / .65); cursor: pointer; display: grid; place-items: center; opacity: 0; transition: opacity .2s;
+  }
+  .flecha svg { width: 28px; height: 28px; }
+  .flecha.izq { left: 0; border-radius: 0 6px 6px 0; }
+  .flecha.der { right: 0; border-radius: 6px 0 0 6px; }
+  .carril:hover .flecha, .flecha:focus-visible { opacity: 1; }
+  @media (hover: none) { .flecha { display: none; } }
+
+  /* ── Tarjeta ── */
+  .card { position: relative; border-radius: 6px; }
+  .thumb { all: unset; display: block; cursor: pointer; border-radius: 6px; overflow: hidden; }
+  .thumb:focus-visible { outline: 2px solid var(--marquesina); outline-offset: 2px; }
+  .thumb img { width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; background: var(--butaca); transition: filter .2s; }
+  .posters .thumb img { aspect-ratio: 2 / 3; }
+  .info { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--butaca); border-radius: 0 0 6px 6px; }
+  .info .txt { display: grid; min-width: 0; }
+  .info strong { font-size: 13.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .info span { font-size: 12.5px; color: var(--tenue); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fav {
+    flex: 0 0 auto; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; cursor: pointer;
+    border: 1.5px solid var(--tenue); background: rgb(20 14 13 / .6); margin-left: auto;
+  }
+  .fav svg { width: 16px; height: 16px; }
+  .fav[aria-pressed="true"] { border-color: var(--marquesina); color: var(--marquesina); }
+  /* Mi lista se ve siempre: una cinta ámbar en la esquina de cada título guardado (R7). */
+  .card.guardado::after {
+    content: ""; position: absolute; top: 0; right: 12px; z-index: 3; width: 16px; height: 24px; pointer-events: none;
+    background: var(--marquesina); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 76%, 0 100%);
+    filter: drop-shadow(0 2px 3px rgb(0 0 0 / .5));
+  }
+  .card .req { position: absolute; top: 6px; left: 6px; z-index: 4; }
+  .card .req.r6 { left: auto; right: 36px; }
+  @media (hover: hover) {
+    /* Al pasar el cursor la imagen se ilumina y aparece la info; sin zoom ni sombras en cada tarjeta. */
+    .pista .info {
+      position: absolute; left: 0; right: 0; bottom: 0; padding-top: 30px;
+      background: linear-gradient(to top, rgb(20 14 13 / .97) 55%, rgb(20 14 13 / 0));
+      opacity: 0; pointer-events: none; transition: opacity .18s;
+    }
+    .pista .card:is(:hover, :focus-within) .info { opacity: 1; pointer-events: auto; }
+    .card:is(:hover, :focus-within) .thumb img { filter: brightness(1.15); }
+  }
+
+  /* ── Vista en cuadrícula (búsqueda, Mi lista, género) ── */
+  .vista-cuadricula { padding: 124px var(--gutter-r) 48px var(--gutter-l); display: grid; gap: 18px; }
+  .encabezado { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 16px; }
+  .encabezado h2 { margin: 0; font: 800 clamp(32px, 4vw, 46px)/1 var(--display); letter-spacing: .01em; }
+  .encabezado span { color: var(--tenue); font-size: 14px; }
+  .genero { background: var(--butaca); color: var(--pantalla); border: 1px solid var(--pasillo); border-radius: 6px; padding: 6px 10px; font: 500 14px var(--body); }
+  .barra-genero { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; padding: 0 var(--gutter-r) 0 var(--gutter-l); }
+  .barra-genero h2 { margin: 0; font: 800 38px/1 var(--display); letter-spacing: .01em; }
+  .cuadricula { display: grid; gap: 22px 10px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+  .vacio { border: 1px dashed var(--pasillo); border-radius: 8px; padding: 40px 20px; text-align: center; color: var(--tenue); }
+  .vacio strong { display: block; color: var(--pantalla); font: 800 26px var(--display); margin-bottom: 4px; }
+
+  /* ── Modal de detalle ── */
+  dialog { width: min(860px, calc(100% - 24px)); max-height: calc(100% - 48px); padding: 0; border: 0; border-radius: 10px; background: var(--butaca); color: var(--pantalla); box-shadow: 0 30px 80px rgb(0 0 0 / .7); }
+  dialog[open] { animation: abrir .22s ease-out; }
+  @keyframes abrir { from { opacity: 0; transform: translateY(10px) scale(.985); } }
+  dialog::backdrop { background: rgb(8 5 5 / .78); }
+  .d-hero { position: relative; }
+  .d-hero img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+  .d-hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, var(--butaca) 2%, rgb(31 23 21 / 0) 55%); }
+  .d-hero .d-txt { position: absolute; left: clamp(18px, 4vw, 40px); right: clamp(18px, 4vw, 40px); bottom: clamp(14px, 3vw, 30px); z-index: 1; display: grid; gap: 14px; }
+  .d-hero h2 { margin: 0; font: 900 clamp(40px, 6.5vw, 72px)/.9 var(--display); text-transform: uppercase; text-wrap: balance; }
+  .cerrar { position: absolute; top: 12px; right: 12px; z-index: 2; width: 38px; height: 38px; border-radius: 50%; border: 0; background: var(--sala); cursor: pointer; display: grid; place-items: center; }
+  .cerrar svg { width: 18px; height: 18px; }
+  .d-cuerpo { padding: 6px clamp(18px, 4vw, 40px) 32px; display: grid; gap: 26px; }
+  .d-cols { display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; }
+  .d-cols p { margin: 0; font-size: 15.5px; max-width: 60ch; }
+  .d-lado { display: grid; gap: 6px; align-content: start; font-size: 14px; }
+  .d-lado span { color: var(--tenue); }
+  .d-cuerpo h3 { margin: 0 0 12px; font: 600 19px var(--body); }
+  .parecidos { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+  .parecidos .thumb img { border-radius: 6px; }
+
+  /* ── Plan de implementación ── */
+  .plan { border-top: 1px solid var(--pasillo); padding: 40px var(--gutter-r) 72px var(--gutter-l); display: grid; gap: 24px; }
+  .plan h2 { margin: 0; font: 800 38px/1 var(--display); letter-spacing: .01em; }
+  .plan > p { margin: 0; color: var(--tenue); max-width: 70ch; }
+  .plan-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+  .panel { background: var(--butaca); border: 1px solid var(--pasillo); border-radius: 10px; padding: 20px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+  .panel h3 { margin: 0; font: 600 16px var(--body); }
+  .panel pre { margin: 0; font: 13px/1.7 ui-monospace, Consolas, monospace; overflow-x: auto; color: var(--pantalla); }
+  .panel pre i { font-style: normal; color: var(--tenue); }
+  .panel pre b { color: var(--marquesina); font-weight: 500; }
+  .panel ul { margin: 0; padding-left: 18px; display: grid; gap: 8px; }
+  .panel li span { color: var(--tenue); }
+  .panel code { font: 12.5px ui-monospace, Consolas, monospace; color: var(--marquesina); }
+
+  /* ── Pastilla del boceto ── */
+  .boceto {
+    position: fixed; z-index: 30;
+    right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 14px; border-radius: 99px;
+    background: var(--butaca); border: 1px solid var(--pasillo); font-size: 13px; box-shadow: 0 8px 24px rgb(0 0 0 / .5);
+  }
+  .boceto button { border: 1px solid var(--pasillo); background: var(--sala); border-radius: 99px; padding: 5px 12px; cursor: pointer; font-size: 12.5px; }
+
+  @media (max-width: 700px) {
+    .links { order: 3; width: 100%; gap: 18px; overflow-x: auto; scrollbar-width: none; }
+    .d-cols { grid-template-columns: 1fr; }
+    .hero-txt { padding-top: 160px; }
+    .hero p { font-size: 15px; }
+    .logo { font-size: 19px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+  }
+</style>
+
+<nav class="nav" id="nav">
+  <h1 class="logo">Movie Explorer</h1>
+  <div class="links" id="links">
+    <button type="button" data-vista="inicio" aria-current="page">Inicio</button>
+    <button type="button" data-vista="series">Series</button>
+    <button type="button" data-vista="peliculas">Películas</button>
+    <button type="button" data-vista="milista">Mi lista</button>
+    <i class="req">R4 R7</i>
+  </div>
+  <div class="derecha">
+    <i class="req">R3</i>
+    <div class="buscador" id="buscador">
+      <button type="button" id="btn-buscar" aria-label="Buscar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
+      </button>
+      <input id="q" type="search" placeholder="Busca un título o género" maxlength="100" aria-label="Buscar por título o género">
+    </div>
+  </div>
+</nav>
+
+<div id="app"></div>
+
+<section class="plan" aria-labelledby="plan-t">
+  <h2 id="plan-t">Cómo lo implementaría en React</h2>
+  <p>La estructura y el estado son los mismos del boceto v1. Cambia el aspecto: colores, imágenes por género, banner y tarjetas. Todo sigue siendo React, JavaScript y CSS, sin API.</p>
+  <div class="plan-cols">
+    <div class="panel">
+      <h3>Qué cambia respecto al v1</h3>
+      <ul>
+        <li>Fondo de sala de cine <span>(terciopelo oscuro) en lugar del negro azulado; el ámbar se lee como luz</span></li>
+        <li>Imágenes por género <span>órbitas, persianas, formas, grano, bloques, horizonte y dunas, en lugar del mismo círculo en los 20 títulos</span></li>
+        <li>Haz del proyector <span>en el banner: el único efecto llamativo de la página, se enciende una vez al cargar</span></li>
+        <li>Fila de Películas en pósters 2:3 <span>para romper la monotonía de las filas</span></li>
+        <li>Cinta ámbar en los títulos de Mi lista <span>visible sin pasar el cursor</span></li>
+        <li>Menos mayúsculas y dos tipografías <span>sin IBM Plex Mono ni etiquetas sobre el título</span></li>
+        <li>Búsqueda por título o género <span>y filas de género solo con 3 títulos o más</span></li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>Componentes</h3>
+<pre>App.jsx            <i>estado: vista, búsqueda, género,</i>
+│                  <i>favoritos, título abierto</i>
+├─ Navbar          <i>logo, enlaces, buscador</i>   <b>R3 R4</b>
+├─ Hero            <i>título destacado + haz</i>
+├─ Fila ×n         <i>carril 16:9 o pósters</i>     <b>R1</b>
+│  └─ Tarjeta      <i>imagen, título, género</i>   <b>R2 R6</b>
+├─ Cuadricula      <i>búsqueda / Mi lista</i>      <b>R3 R7</b>
+└─ ModalDetalle    <i>sinopsis, año, duración</i>  <b>R5 R6</b></pre>
+    </div>
+    <div class="panel">
+      <h3>Archivos que cambian</h3>
+      <ul>
+        <li><code>public/posters/</code> <span>se regeneran los 20 pósters con el motivo de su género</span></li>
+        <li><code>public/banners/</code> <span>20 imágenes 16:9 con el mismo motivo</span></li>
+        <li><code>catalogo.js</code> <span>se agrega el campo <code>banner</code> a cada título</span></li>
+        <li><code>src/components/</code> <span>Navbar, Hero, Fila, Tarjeta y ModalDetalle</span></li>
+        <li><code>App.css</code> <span>nuevos colores, haz del proyector, cinta de Mi lista</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="boceto">
+  <span>Boceto v2</span>
+  <button type="button" id="toggle-req">Ocultar requisitos</button>
+</div>
+
+<dialog id="detalle" aria-labelledby="d-titulo">
+  <button class="cerrar" id="d-cerrar" type="button" aria-label="Cerrar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+  </button>
+  <div class="d-hero">
+    <img id="d-img" alt="">
+    <div class="d-txt">
+      <h2 id="d-titulo"></h2>
+      <div class="acciones">
+        <button class="btn velo" id="d-fav" type="button"></button>
+        <i class="req" style="align-self:center">R5 R6</i>
+      </div>
+    </div>
+  </div>
+  <div class="d-cuerpo">
+    <div class="d-cols">
+      <div style="display:grid;gap:12px">
+        <div class="meta" id="d-meta"></div>
+        <p id="d-sinopsis"></p>
+      </div>
+      <div class="d-lado" id="d-lado"></div>
+    </div>
+    <div>
+      <h3>Títulos parecidos</h3>
+      <div class="parecidos" id="d-parecidos"></div>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  const CATALOGO = [
+    { id: 'interstellar', type: 'movie', title: 'Interstellar', genres: ['Ciencia ficción', 'Drama'], year: 2014, durationMin: 169, synopsis: 'Con la Tierra al borde del colapso, un expiloto cruza un agujero de gusano en busca de un nuevo hogar para la humanidad.' },
+    { id: 'coco', type: 'movie', title: 'Coco', genres: ['Animación', 'Fantasía'], year: 2017, durationMin: 105, synopsis: 'Miguel sueña con ser músico. En Día de Muertos cruza a la Tierra de los Muertos y descubre la historia de su familia.' },
+    { id: 'stranger-things', type: 'series', title: 'Stranger Things', genres: ['Misterio', 'Ciencia ficción'], year: 2016, seasons: 5, synopsis: 'En un pueblo de los años ochenta, la desaparición de un niño destapa experimentos secretos y fuerzas sobrenaturales.' },
+    { id: 'inception', type: 'movie', title: 'El origen', genres: ['Ciencia ficción', 'Acción'], year: 2010, durationMin: 148, synopsis: 'Un ladrón que roba secretos desde los sueños recibe el encargo contrario: implantar una idea en la mente de alguien.' },
+    { id: 'breaking-bad', type: 'series', title: 'Breaking Bad', genres: ['Crimen', 'Drama'], year: 2008, seasons: 5, synopsis: 'Un profesor de química con un diagnóstico terminal empieza a fabricar drogas para asegurar el futuro de su familia.' },
+    { id: 'spirited-away', type: 'movie', title: 'El viaje de Chihiro', genres: ['Animación', 'Fantasía'], year: 2001, durationMin: 125, synopsis: 'Chihiro queda atrapada en un mundo de espíritus y trabaja en una casa de baños para rescatar a sus padres.' },
+    { id: 'dark', type: 'series', title: 'Dark', genres: ['Misterio', 'Drama'], year: 2017, seasons: 3, synopsis: 'La desaparición de dos niños revela las conexiones entre cuatro familias a lo largo de varias generaciones.' },
+    { id: 'the-matrix', type: 'movie', title: 'Matrix', genres: ['Ciencia ficción', 'Acción'], year: 1999, durationMin: 136, synopsis: 'Un programador descubre que la realidad es una simulación creada por máquinas y se une a la resistencia.' },
+    { id: 'the-office', type: 'series', title: 'The Office', genres: ['Comedia'], year: 2005, seasons: 9, synopsis: 'Falso documental sobre los empleados de una distribuidora de papel y su peculiar jefe.' },
+    { id: 'parasite', type: 'movie', title: 'Parásitos', genres: ['Thriller', 'Drama'], year: 2019, durationMin: 132, synopsis: 'Una familia sin recursos se infiltra en la vida de una familia adinerada hasta que un secreto lo cambia todo.' },
+    { id: 'arcane', type: 'series', title: 'Arcane', genres: ['Animación', 'Acción'], year: 2021, seasons: 2, synopsis: 'Dos hermanas quedan en bandos opuestos del conflicto entre una ciudad próspera y los barrios bajos.' },
+    { id: 'the-godfather', type: 'movie', title: 'El padrino', genres: ['Crimen', 'Drama'], year: 1972, durationMin: 175, synopsis: 'El patriarca de una familia mafiosa intenta mantener su imperio mientras su hijo menor es arrastrado al negocio.' },
+    { id: 'sherlock', type: 'series', title: 'Sherlock', genres: ['Misterio', 'Crimen'], year: 2010, seasons: 4, synopsis: 'Versión moderna del detective más famoso, que resuelve casos en el Londres actual junto a John Watson.' },
+    { id: 'toy-story', type: 'movie', title: 'Toy Story', genres: ['Animación', 'Comedia'], year: 1995, durationMin: 81, synopsis: 'Woody ve amenazado su lugar como juguete favorito con la llegada de Buzz Lightyear.' },
+    { id: 'friends', type: 'series', title: 'Friends', genres: ['Comedia', 'Romance'], year: 1994, seasons: 10, synopsis: 'Seis amigos en Nueva York comparten trabajos, amores y desamores alrededor de una taza de café.' },
+    { id: 'get-out', type: 'movie', title: '¡Huye!', genres: ['Terror', 'Misterio'], year: 2017, durationMin: 104, synopsis: 'Un joven visita a la familia de su novia. La bienvenida amable esconde algo inquietante.' },
+    { id: 'chernobyl', type: 'series', title: 'Chernobyl', genres: ['Drama', 'Historia'], year: 2019, seasons: 1, synopsis: 'Miniserie sobre el accidente nuclear de 1986 y quienes arriesgaron su vida para contenerlo.' },
+    { id: 'la-la-land', type: 'movie', title: 'La La Land', genres: ['Romance', 'Musical'], year: 2016, durationMin: 128, synopsis: 'Una actriz y un pianista de jazz se enamoran mientras persiguen sus sueños en Los Ángeles.' },
+    { id: 'the-mandalorian', type: 'series', title: 'The Mandalorian', genres: ['Ciencia ficción', 'Aventura'], year: 2019, seasons: 3, synopsis: 'Un cazarrecompensas recorre la galaxia mientras protege a una misteriosa criatura.' },
+    { id: 'dune', type: 'movie', title: 'Dune', genres: ['Ciencia ficción', 'Aventura'], year: 2021, durationMin: 155, synopsis: 'El heredero de una casa noble llega a Arrakis, un planeta desértico en disputa por su recurso más valioso.' },
+  ];
+
+  // ── Imágenes generadas: cada género principal tiene su propio motivo ──
+  // (sin pósters reales ni imágenes con derechos de autor)
+  const MOTIVO = {
+    'Ciencia ficción': 'orbitas', 'Aventura': 'dunas', 'Acción': 'dunas',
+    'Crimen': 'persiana', 'Thriller': 'persiana',
+    'Animación': 'formas', 'Fantasía': 'formas',
+    'Misterio': 'grano', 'Terror': 'grano',
+    'Comedia': 'bloques', 'Romance': 'bloques', 'Musical': 'bloques',
+    'Drama': 'horizonte', 'Historia': 'horizonte',
+  };
+  // Dos paletas por motivo: [fondo claro, fondo oscuro, luz, segundo color]
+  const PALETAS = {
+    orbitas:   [['#1d3a72', '#070b1a', '#9ad0ff', '#f0b13c'], ['#3a2466', '#0a0717', '#c8b4ff', '#7fe3d4'], ['#0f4f4a', '#04110f', '#ffd59a', '#f07f3c'], ['#5a1f1a', '#120605', '#ffb27a', '#9ad0ff']],
+    dunas:     [['#c8752e', '#2a1206', '#ffd9a0', '#7a3410'], ['#b5532a', '#1e0b08', '#ffcf8a', '#5c1f12']],
+    persiana:  [['#3a2416', '#0d0806', '#f2c48a', '#8a2d3b'], ['#2c2a26', '#0a0908', '#e8dcc0', '#b0342c']],
+    formas:    [['#0f6b6b', '#062023', '#ffb38a', '#f6e2b3'], ['#2f5d8a', '#0b1a2c', '#ffd166', '#ff8fa3']],
+    grano:     [['#1e3328', '#060c09', '#d9e6c8', '#6f8f6a'], ['#2d1f33', '#09060c', '#e3d3f0', '#8a5a9a']],
+    bloques:   [['#e0a43a', '#7a2f3a', '#2b2a6e', '#f6efe2'], ['#5b2a86', '#1c0f2e', '#ff9e7a', '#ffd166']],
+    horizonte: [['#3a4450', '#0e1114', '#f0b13c', '#d6c7b0'], ['#4a3b33', '#120d0b', '#ff8a4c', '#e6d2b5']],
+  };
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' }[c]));
+  const hash = (s) => [...s].reduce((h, c) => ((h * 33) ^ c.charCodeAt(0)) >>> 0, 5381);
+  const azar = (semilla) => { let s = semilla || 1; return () => ((s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296); };
+
+  function capas(motivo, w, h, [a, b, luz, otro], r) {
+    const m = Math.min(w, h);
+    switch (motivo) {
+      case 'orbitas': {
+        const cx = w * (0.55 + r() * 0.25), cy = h * (0.3 + r() * 0.2), R = m * (0.22 + r() * 0.08);
+        let estrellas = '';
+        for (let i = 0; i < 70; i++) estrellas += `<circle cx="${(r() * w).toFixed(1)}" cy="${(r() * h).toFixed(1)}" r="${(r() * m / 300 + m / 900).toFixed(2)}" fill="#fff" fill-opacity="${(0.2 + r() * 0.6).toFixed(2)}"/>`;
+        const rot = -20 + r() * 40;
+        return `<rect width="${w}" height="${h}" fill="url(#fondo)"/>${estrellas}
+          <g transform="rotate(${rot} ${cx} ${cy})" fill="none" stroke="${luz}" stroke-width="${m / 260}">
+            <ellipse cx="${cx}" cy="${cy}" rx="${R * 2.6}" ry="${R * 0.7}" stroke-opacity=".35"/>
+            <ellipse cx="${cx}" cy="${cy}" rx="${R * 1.9}" ry="${R * 0.5}" stroke-opacity=".55"/>
+          </g>
+          <circle cx="${cx}" cy="${cy}" r="${R}" fill="url(#planeta)"/>
+          <circle cx="${cx + R * 1.7}" cy="${cy + R * 0.6}" r="${R * 0.12}" fill="${otro}"/>`;
+      }
+      case 'dunas': {
+        const sol = `<circle cx="${w * (0.25 + r() * 0.5)}" cy="${h * 0.34}" r="${m * 0.12}" fill="${luz}" fill-opacity=".9"/>`;
+        let d = '';
+        [[0.58, b, 0.55], [0.7, otro, 0.85], [0.82, b, 1]].forEach(([y, c, o]) => {
+          const y0 = h * y, amp = h * (0.06 + r() * 0.06), px = w * (0.2 + r() * 0.6);
+          d += `<path d="M0 ${y0} Q ${px} ${y0 - amp * 2} ${w} ${y0 + amp * 0.3} L ${w} ${h} L 0 ${h} Z" fill="${c}" fill-opacity="${o}"/>`;
+        });
+        return `<rect width="${w}" height="${h}" fill="url(#cielo)"/>${sol}${d}`;
+      }
+      case 'persiana': {
+        const paso = m / 9, ang = -14 - r() * 10;
+        let franjas = '';
+        for (let i = -6; i < (w + h) / paso + 6; i++) franjas += `<rect x="-${w}" y="${i * paso}" width="${w * 3}" height="${paso * 0.42}" fill="${luz}" fill-opacity="${(0.14 + (i % 3) * 0.05).toFixed(2)}"/>`;
+        return `<rect width="${w}" height="${h}" fill="url(#fondo)"/>
+          <g transform="rotate(${ang} ${w / 2} ${h / 2})">${franjas}</g>
+          <rect x="${w * (0.58 + r() * 0.2)}" y="${h * 0.2}" width="${m * 0.06}" height="${h}" fill="${otro}" fill-opacity=".85"/>
+          <rect width="${w}" height="${h}" fill="url(#vineta)"/>`;
+      }
+      case 'formas': {
+        let f = '';
+        const cols = [luz, otro, b, luz];
+        for (let i = 0; i < 4; i++) f += `<ellipse cx="${(w * (0.15 + r() * 0.75)).toFixed(0)}" cy="${(h * (0.15 + r() * 0.6)).toFixed(0)}" rx="${(m * (0.18 + r() * 0.2)).toFixed(0)}" ry="${(m * (0.14 + r() * 0.18)).toFixed(0)}" fill="${cols[i]}" fill-opacity="${(0.55 + r() * 0.35).toFixed(2)}"/>`;
+        return `<rect width="${w}" height="${h}" fill="${a}"/>${f}<rect width="${w}" height="${h}" fill="url(#sombra)"/>`;
+      }
+      case 'grano': {
+        const lx = w * (0.6 + r() * 0.25), ly = h * (0.22 + r() * 0.1);
+        return `<rect width="${w}" height="${h}" fill="url(#fondo)"/>
+          <circle cx="${lx}" cy="${ly}" r="${m * 0.11}" fill="${luz}" fill-opacity=".9"/>
+          <circle cx="${lx}" cy="${ly}" r="${m * 0.26}" fill="${luz}" fill-opacity=".08"/>
+          <path d="M0 ${h * 0.78} L ${w * 0.18} ${h * 0.7} L ${w * 0.22} ${h * 0.5} L ${w * 0.26} ${h * 0.7} L ${w * 0.62} ${h * 0.74} L ${w} ${h * 0.66} L ${w} ${h} L 0 ${h} Z" fill="#000" fill-opacity=".7"/>
+          <rect width="${w}" height="${h}" filter="url(#ruido)" opacity=".28"/>
+          <rect width="${w}" height="${h}" fill="url(#vineta)"/>`;
+      }
+      case 'bloques': {
+        const g = -8 + r() * 16;
+        return `<rect width="${w}" height="${h}" fill="${a}"/>
+          <g transform="rotate(${g} ${w / 2} ${h / 2})">
+            <rect x="${-w * 0.1}" y="${h * (0.45 + r() * 0.15)}" width="${w * 1.2}" height="${h}" fill="${b}"/>
+            <rect x="${w * (0.1 + r() * 0.4)}" y="${h * 0.12}" width="${m * 0.34}" height="${m * 0.34}" fill="${luz}"/>
+          </g>
+          <circle cx="${w * (0.7 + r() * 0.15)}" cy="${h * 0.3}" r="${m * 0.15}" fill="${otro}"/>
+          <rect width="${w}" height="${h}" fill="url(#sombra)"/>`;
+      }
+      default: { // horizonte
+        const y = h * (0.6 + r() * 0.08);
+        return `<rect width="${w}" height="${h}" fill="url(#cielo)"/>
+          <ellipse cx="${w * (0.3 + r() * 0.4)}" cy="${y}" rx="${w * 0.55}" ry="${m * 0.16}" fill="url(#brillo)"/>
+          <rect y="${y}" width="${w}" height="${h - y}" fill="${b}"/>
+          <rect y="${y - 1}" width="${w}" height="${m / 200 + 1}" fill="${luz}" fill-opacity=".8"/>
+          <rect width="${w}" height="${h}" fill="url(#sombra)"/>`;
+      }
+    }
+  }
+
+  function arte(t, { w, h, conTitulo }) {
+    const k = hash(t.id), r = azar(k);
+    const motivo = MOTIVO[t.genres[0]] || 'horizonte';
+    const pal = PALETAS[motivo][k % PALETAS[motivo].length];
+    const [a, b, luz] = pal;
+    let titulo = '';
+    if (conTitulo) {
+      const ancho = w < h ? 9 : 13;
+      const palabras = t.title.toUpperCase().split(' ');
+      const lineas = []; let cur = '';
+      for (const p of palabras) { const n = cur ? cur + ' ' + p : p; if (n.length <= ancho || !cur) cur = n; else { lineas.push(cur); cur = p; } }
+      lineas.push(cur);
+      // El tamaño se ajusta a la línea más larga para que nunca se salga (Arial Narrow no existe en todos los sistemas).
+      const larga = Math.max(...lineas.slice(0, 2).map((l) => l.length));
+      const fs = Math.min((w < h ? 46 : 58) * (lineas.length > 1 ? 0.86 : 1), (w - 44) / (larga * 0.8));
+      const base = h - 26 - (Math.min(lineas.length, 2) - 1) * fs * 0.92;
+      titulo = `<rect width="${w}" height="${h}" fill="url(#pie)"/><text fill="#fff" font-family="Arial Narrow, Roboto Condensed, Helvetica, sans-serif" font-weight="800" font-size="${fs}" letter-spacing="0.5">` +
+        lineas.slice(0, 2).map((l, i) => `<tspan x="22" y="${(base + i * fs * 0.92).toFixed(0)}">${esc(l)}</tspan>`).join('') + '</text>';
+    }
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}">
+      <defs>
+        <linearGradient id="fondo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>
+        <linearGradient id="cielo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${b}"/><stop offset=".7" stop-color="${a}"/></linearGradient>
+        <radialGradient id="planeta" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="${luz}"/><stop offset="1" stop-color="${a}"/></radialGradient>
+        <radialGradient id="brillo"><stop offset="0" stop-color="${luz}" stop-opacity=".7"/><stop offset="1" stop-color="${luz}" stop-opacity="0"/></radialGradient>
+        <radialGradient id="vineta" r=".75"><stop offset=".5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".75"/></radialGradient>
+        <linearGradient id="sombra" x1="0" y1="0" x2="0" y2="1"><stop offset=".5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></linearGradient>
+        <linearGradient id="pie" x1="0" y1="0" x2="0" y2="1"><stop offset=".5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".6"/></linearGradient>
+        <filter id="ruido"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="${k % 97}"/><feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.4 -.4"/></filter>
+      </defs>
+      ${capas(motivo, w, h, pal, r)}
+      ${titulo}
+    </svg>`;
+    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  }
+  CATALOGO.forEach((t) => {
+    t.miniatura = arte(t, { w: 480, h: 270, conTitulo: true });
+    t.poster = arte(t, { w: 300, h: 450, conTitulo: true });
+    t.banner = arte(t, { w: 1600, h: 900, conTitulo: false });
+  });
+
+  // ── Estado (en React: useState en App.jsx) ──
+  const estado = { vista: 'inicio', q: '', genero: 'todos', favs: new Set(['dark', 'coco', 'the-matrix']), abierto: null };
+  const $ = (id) => document.getElementById(id);
+  const norm = (s) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
+  const byId = (id) => CATALOGO.find((t) => t.id === id);
+  const duracion = (t) => t.type === 'movie' ? `${Math.floor(t.durationMin / 60)} h ${t.durationMin % 60} min` : `${t.seasons} ${t.seasons === 1 ? 'temporada' : 'temporadas'}`;
+  const ICON = {
+    mas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+    ok: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
+    info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>',
+    izq: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>',
+    der: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>',
+  };
+  const DESTACADO = { inicio: 'interstellar', series: 'stranger-things', peliculas: 'dune' };
+
+  function tarjeta(t, { marcas = false, poster = false } = {}) {
+    const on = estado.favs.has(t.id);
+    return `<div class="card${on ? ' guardado' : ''}">
+      ${marcas ? '<i class="req">R2</i><i class="req r6">R6</i>' : ''}
+      <button class="thumb" type="button" data-abrir="${t.id}" aria-label="Ver detalle de ${esc(t.title)}"><img src="${poster ? t.poster : t.miniatura}" alt="${esc(t.title)}" width="${poster ? 300 : 480}" height="${poster ? 450 : 270}" loading="lazy"></button>
+      <div class="info">
+        <div class="txt"><strong>${esc(t.title)}</strong><span>${t.year}, ${esc(t.genres[0].toLowerCase())}</span></div>
+        <button class="fav" type="button" data-fav="${t.id}" aria-pressed="${on}" aria-label="${on ? 'Quitar de' : 'Agregar a'} Mi lista">${on ? ICON.ok : ICON.mas}</button>
+      </div>
+    </div>`;
+  }
+
+  function fila(titulo, items, { marcas = '', poster = false } = {}) {
+    if (!items.length) return '';
+    return `<section class="fila">
+      <h3>${esc(titulo)} <small>${items.length}</small> ${marcas}</h3>
+      <div class="carril">
+        <button class="flecha izq" type="button" data-mover="-1" aria-label="Anteriores">${ICON.izq}</button>
+        <div class="pista${poster ? ' posters' : ''}">${items.map((t, i) => tarjeta(t, { marcas: marcas.includes('R2') && i === 0, poster })).join('')}</div>
+        <button class="flecha der" type="button" data-mover="1" aria-label="Siguientes">${ICON.der}</button>
+      </div>
+    </section>`;
+  }
+
+  function hero(t) {
+    const on = estado.favs.has(t.id);
+    return `<header class="hero">
+      <img src="${t.banner}" alt="">
+      <div class="hero-txt">
+        <h2>${esc(t.title)}</h2>
+        <div class="meta"><span>${t.type === 'movie' ? 'Película' : 'Serie'}</span><span>${t.year}</span><span>${duracion(t)}</span><span class="pill">${esc(t.genres[0])}</span></div>
+        <p>${esc(t.synopsis)}</p>
+        <div class="acciones">
+          <button class="btn claro" type="button" data-abrir="${t.id}">${ICON.info} Más información</button>
+          <button class="btn velo" type="button" data-fav="${t.id}" aria-pressed="${on}">${on ? ICON.ok + ' En Mi lista' : ICON.mas + ' Mi lista'}</button>
+        </div>
+      </div>
+    </header>`;
+  }
+
+  function cuadricula(titulo, items, extra = '', vacio = '') {
+    return `<section class="vista-cuadricula">
+      <div class="encabezado"><h2>${titulo}</h2><span>${items.length} ${items.length === 1 ? 'título' : 'títulos'}</span>${extra}</div>
+      ${items.length ? `<div class="cuadricula">${items.map((t) => tarjeta(t)).join('')}</div>` : vacio}
+    </section>`;
+  }
+
+  function generosDe(lista) {
+    return [...new Set(lista.flatMap((t) => t.genres))].sort((a, b) => a.localeCompare(b, 'es'));
+  }
+
+  function render() {
+    document.querySelectorAll('#links button').forEach((b) => {
+      if (b.dataset.vista === estado.vista) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+    });
+    const app = $('app');
+    const q = norm(estado.q);
+
+    // Búsqueda (R3): por título o por género
+    if (q) {
+      const res = CATALOGO.filter((t) => norm(t.title).includes(q) || t.genres.some((g) => norm(g).includes(q)));
+      app.className = 'sin-hero';
+      app.innerHTML = cuadricula(`Resultados para «${esc(estado.q.trim())}»`, res, '<i class="req">R3</i>',
+        '<div class="vacio"><strong>Sin resultados</strong>Prueba con otro título o con un género, como “comedia”.</div>');
+      return;
+    }
+
+    // Mi lista (R7)
+    if (estado.vista === 'milista') {
+      const favs = [...estado.favs].map(byId);
+      app.className = 'sin-hero';
+      app.innerHTML = cuadricula('Mi lista', favs, '<i class="req">R7</i>',
+        '<div class="vacio"><strong>Tu lista está vacía</strong>Usa el botón + de cualquier título para guardarlo aquí.</div>');
+      return;
+    }
+
+    // Inicio, Series o Películas (R1, R4)
+    const tipo = estado.vista === 'series' ? 'series' : estado.vista === 'peliculas' ? 'movie' : null;
+    const base = tipo ? CATALOGO.filter((t) => t.type === tipo) : CATALOGO;
+
+    if (tipo && estado.genero !== 'todos') {
+      const res = base.filter((t) => t.genres.includes(estado.genero));
+      app.className = 'sin-hero';
+      app.innerHTML = cuadricula(`${tipo === 'movie' ? 'Películas' : 'Series'} de ${esc(estado.genero.toLowerCase())}`, res, selectorGenero(base));
+      return;
+    }
+
+    let filas = '';
+    if (tipo) {
+      filas += `<div class="barra-genero"><h2>${tipo === 'movie' ? 'Películas' : 'Series'}</h2>${selectorGenero(base)}</div>`;
+    }
+    if (!tipo && estado.favs.size) filas += fila('Mi lista', [...estado.favs].map(byId), { marcas: '<i class="req">R7</i>' });
+    if (!tipo) {
+      filas += fila('Series', CATALOGO.filter((t) => t.type === 'series'), { marcas: '<i class="req">R1 R2 R6</i>' });
+      filas += fila('Películas', CATALOGO.filter((t) => t.type === 'movie'), { poster: true });
+    }
+    for (const g of generosDe(base)) {
+      const items = base.filter((t) => t.genres.includes(g));
+      if (items.length >= 3) filas += fila(g, items, { poster: tipo === 'movie' });
+    }
+    app.className = '';
+    app.innerHTML = hero(byId(DESTACADO[estado.vista])) + `<div class="filas">${filas}</div>`;
+  }
+
+  function selectorGenero(base) {
+    const ops = generosDe(base).map((g) => `<option value="${esc(g)}"${g === estado.genero ? ' selected' : ''}>${esc(g)}</option>`).join('');
+    return `<select class="genero" id="genero" aria-label="Filtrar por género"><option value="todos">Todos los géneros</option>${ops}</select><i class="req">R4</i>`;
+  }
+
+  function abrir(id) {
+    const t = byId(id);
+    estado.abierto = id;
+    const on = estado.favs.has(id);
+    $('d-img').src = t.banner;
+    $('d-titulo').textContent = t.title;
+    $('d-fav').setAttribute('aria-pressed', on);
+    $('d-fav').innerHTML = on ? ICON.ok + ' En Mi lista' : ICON.mas + ' Agregar a Mi lista';
+    $('d-meta').innerHTML = `<span>${t.type === 'movie' ? 'Película' : 'Serie'}</span><span>${t.year}</span><span>${duracion(t)}</span>`;
+    $('d-sinopsis').textContent = t.synopsis;
+    $('d-lado').innerHTML = `<div><span>Géneros: </span>${t.genres.map(esc).join(', ')}</div><div><span>${t.type === 'movie' ? 'Duración' : 'Temporadas'}: </span>${duracion(t)}</div><div><span>Estreno: </span>${t.year}</div>`;
+    const parecidos = CATALOGO.filter((x) => x.id !== id && x.genres.some((g) => t.genres.includes(g))).slice(0, 6);
+    $('d-parecidos').innerHTML = parecidos.map((x) => `<button class="thumb" type="button" data-abrir="${x.id}" aria-label="Ver detalle de ${esc(x.title)}"><img src="${x.miniatura}" alt="${esc(x.title)}" width="480" height="270" loading="lazy"></button>`).join('');
+    if (!$('detalle').open) $('detalle').showModal();
+    $('detalle').scrollTop = 0;
+  }
+
+  function alternarFav(id) {
+    estado.favs.has(id) ? estado.favs.delete(id) : estado.favs.add(id);
+    const scrolls = [...document.querySelectorAll('.pista')].map((p) => p.scrollLeft);
+    render();
+    document.querySelectorAll('.pista').forEach((p, i) => { if (scrolls[i] != null) p.scrollLeft = scrolls[i]; });
+    if (estado.abierto) abrir(estado.abierto);
+  }
+
+  // ── Eventos ──
+  document.addEventListener('click', (e) => {
+    const fav = e.target.closest('[data-fav]');
+    if (fav) return alternarFav(fav.dataset.fav);
+    const ab = e.target.closest('[data-abrir]');
+    if (ab) return abrir(ab.dataset.abrir);
+    const mv = e.target.closest('[data-mover]');
+    if (mv) {
+      const pista = mv.parentElement.querySelector('.pista');
+      pista.scrollBy({ left: Number(mv.dataset.mover) * pista.clientWidth * 0.85, behavior: 'smooth' });
+      return;
+    }
+    const link = e.target.closest('#links [data-vista]');
+    if (link) {
+      estado.vista = link.dataset.vista; estado.genero = 'todos'; estado.q = ''; $('q').value = '';
+      render(); window.scrollTo({ top: 0 });
+    }
+  });
+  document.addEventListener('change', (e) => {
+    if (e.target.id === 'genero') { estado.genero = e.target.value; render(); }
+  });
+  $('btn-buscar').addEventListener('click', () => {
+    const abierto = $('buscador').classList.toggle('abierto');
+    if (abierto) $('q').focus(); else { $('q').value = ''; estado.q = ''; render(); }
+  });
+  $('q').addEventListener('input', (e) => { estado.q = e.target.value; render(); });
+  $('q').addEventListener('keydown', (e) => { if (e.key === 'Escape') { $('q').value = ''; estado.q = ''; $('buscador').classList.remove('abierto'); render(); } });
+  $('d-fav').addEventListener('click', () => alternarFav(estado.abierto));
+  $('d-cerrar').addEventListener('click', () => $('detalle').close());
+  $('detalle').addEventListener('close', () => { estado.abierto = null; });
+  $('detalle').addEventListener('click', (e) => { if (e.target === $('detalle')) $('detalle').close(); });
+  window.addEventListener('scroll', () => $('nav').classList.toggle('solida', window.scrollY > 40), { passive: true });
+  $('toggle-req').addEventListener('click', (e) => {
+    const oculto = document.body.classList.toggle('sin-req');
+    e.target.textContent = oculto ? 'Mostrar requisitos' : 'Ocultar requisitos';
+  });
+
+  render();
+</script>
