@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" width="300" height="450">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0.4" y2="1"><stop offset="0" stop-color="#7a2f6b"/><stop offset="1" stop-color="#160a17"/></linearGradient>
+    <radialGradient id="l" cx="0.783" cy="0.491" r="0.6"><stop offset="0" stop-color="#ffd166" stop-opacity=".55"/><stop offset="1" stop-color="#ffd166" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="300" height="450" fill="url(#g)"/>
+  <rect width="300" height="450" fill="url(#l)"/>
+  <circle cx="235" cy="221" r="125" fill="none" stroke="#ffd166" stroke-opacity=".7" stroke-width="2"/>
+  <circle cx="253" cy="231" r="68.8" fill="#ffd166" fill-opacity=".18"/>
+  <line x1="24" x2="276" y1="344" y2="344" stroke="#ffffff" stroke-opacity=".3"/>
+  <text x="24" y="40" fill="#ffffff" fill-opacity=".75" font-family="Arial Narrow, Roboto Condensed, sans-serif" font-size="13" letter-spacing="3">SERIE · 2019</text>
+  <text fill="#ffffff" font-family="Arial Narrow, Roboto Condensed, Helvetica, sans-serif" font-weight="700" font-size="38" letter-spacing="1"><tspan x="24" y="400">CHERNOBYL</tspan></text>
+</svg>
