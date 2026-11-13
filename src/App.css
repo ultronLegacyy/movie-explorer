@@ -1,3 +1,5 @@
+/* Interfaz estilo plataforma de streaming: barra fija, banner destacado, filas horizontales
+   por categoría y detalle en una ventana. Un solo tema oscuro. */
 :root {
   color-scheme: dark;
   --fondo: #0e1320;
@@ -6,11 +8,20 @@
   --texto: #ece8df;
   --texto-suave: #98a1b3;
   --acento: #f0b13c;
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --titulos: 'Big Shoulders Display', 'Arial Narrow', 'Roboto Condensed', sans-serif;
+  --cuerpo: 'Instrument Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --margen-izq: max(16px, env(safe-area-inset-left, 0px), 4vw);
+  --margen-der: max(16px, env(safe-area-inset-right, 0px), 4vw);
+  font: 15px/1.5 var(--cuerpo);
 }
 
 * {
   box-sizing: border-box;
+}
+
+html,
+body {
+  overflow-x: hidden;
 }
 
 body {
@@ -19,59 +30,138 @@ body {
   color: var(--texto);
 }
 
-.barra {
-  background: var(--superficie);
-  border-bottom: 1px solid var(--borde);
-  padding: 14px 16px;
+img {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+:is(button, input, select):focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+/* ── Barra superior ── */
+.nav {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 28px;
+  padding: calc(env(safe-area-inset-top, 0px) + 14px) var(--margen-der) 14px var(--margen-izq);
+  background: linear-gradient(to bottom, rgb(14 19 32 / 0.92), rgb(14 19 32 / 0));
+  transition: background-color 0.25s ease;
+}
+
+.nav.solida {
+  background: var(--fondo);
+  box-shadow: 0 1px 0 var(--borde);
 }
 
 .logo {
   margin: 0;
-  font-size: 26px;
-  letter-spacing: 0.04em;
+  font: 900 28px/1 var(--titulos);
+  letter-spacing: 0.05em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .logo b {
   color: var(--acento);
 }
 
-.contenido {
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 20px 16px 48px;
+.enlaces {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
-.conteo {
-  margin: 0 0 16px;
+.enlaces button {
+  padding: 4px 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
   color: var(--texto-suave);
-  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
 }
 
-/* Se adapta solo al ancho de la pantalla (diseño responsive). */
-.cuadricula {
+.enlaces button:hover {
+  color: var(--texto);
+}
+
+.enlaces button[aria-current='page'] {
+  color: var(--texto);
+  font-weight: 600;
+  border-bottom-color: var(--acento);
+}
+
+.buscador {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.buscador.abierto {
+  border-color: var(--texto-suave);
+  background: rgb(14 19 32 / 0.9);
+}
+
+.buscador button {
   display: grid;
-  gap: 22px 16px;
-  grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
 }
 
-.tarjeta {
-  display: grid;
-  gap: 6px;
-  align-content: start;
+.buscador svg {
+  width: 20px;
+  height: 20px;
 }
 
-/* Póster: la foto llena el formato vertical 2:3 y el texto va encima. */
-.poster {
+.buscador input {
+  width: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  color: var(--texto);
+  font: 14px var(--cuerpo);
+  transition: width 0.25s ease;
+}
+
+.buscador.abierto input {
+  width: min(230px, 46vw);
+}
+
+.buscador input::placeholder {
+  color: var(--texto-suave);
+}
+
+/* ── Banner destacado ── */
+.hero {
   position: relative;
-  aspect-ratio: 2 / 3;
-  border-radius: 8px;
+  display: grid;
+  align-items: end;
+  min-height: clamp(460px, 54vw, 660px);
   overflow: hidden;
-  background: var(--superficie);
-  container-type: inline-size;
 }
 
-.poster img {
+.hero > img {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -79,57 +169,615 @@ body {
   object-fit: cover;
 }
 
-/* Degradado para que el texto se lea sobre cualquier foto. */
-.poster::after {
+.hero::after {
   content: '';
   position: absolute;
   inset: 0;
+  background:
+    linear-gradient(to right, rgb(14 19 32 / 0.92) 0%, rgb(14 19 32 / 0.55) 40%, rgb(14 19 32 / 0) 72%),
+    linear-gradient(to top, var(--fondo) 0%, rgb(14 19 32 / 0) 36%);
+}
+
+.hero-texto {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 16px;
+  max-width: 640px;
+  padding: 120px var(--margen-der) clamp(100px, 11vw, 150px) var(--margen-izq);
+}
+
+.hero h2 {
+  margin: 0;
+  font: 900 clamp(56px, 9vw, 120px) / 0.86 var(--titulos);
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  font-size: 14px;
+}
+
+.etiqueta {
+  padding: 1px 10px;
+  border: 1px solid var(--texto-suave);
+  border-radius: 99px;
+  font-size: 13px;
+}
+
+.hero p {
+  max-width: 46ch;
+  margin: 0;
+  font-size: 16.5px;
+  text-shadow: 0 1px 8px rgb(0 0 0 / 0.6);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border: 0;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.btn-claro {
+  background: var(--texto);
+  color: var(--fondo);
+}
+
+.btn-claro:hover {
+  background: #fff;
+}
+
+.btn-velo {
+  background: rgb(152 161 179 / 0.28);
+}
+
+.btn-velo:hover {
+  background: rgb(152 161 179 / 0.42);
+}
+
+.btn-velo[aria-pressed='true'] {
+  background: rgb(240 177 60 / 0.16);
+  color: var(--acento);
+}
+
+/* ── Filas horizontales ── */
+.filas {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: clamp(20px, 3vw, 36px);
+  margin-top: clamp(-120px, -8vw, -60px);
+  padding-bottom: 48px;
+}
+
+.fila h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 2px;
+  padding: 0 var(--margen-der) 0 var(--margen-izq);
+  font: 600 clamp(17px, 1.6vw, 21px) / 1.2 var(--cuerpo);
+}
+
+.fila h2 small {
+  color: var(--texto-suave);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.carril {
+  position: relative;
+}
+
+.pista {
+  display: flex;
+  gap: 8px;
+  padding: 12px var(--margen-der) 16px var(--margen-izq);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: var(--margen-izq);
+  scrollbar-width: none;
+}
+
+.pista::-webkit-scrollbar {
+  display: none;
+}
+
+.pista .tarjeta {
+  flex: 0 0 clamp(200px, 19vw, 290px);
+  scroll-snap-align: start;
+}
+
+.pista-poster .tarjeta {
+  flex-basis: clamp(140px, 13vw, 200px);
+}
+
+.flecha {
+  position: absolute;
+  top: 12px;
+  bottom: 16px;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  width: var(--margen-izq);
+  min-width: 40px;
+  border: 0;
+  background: rgb(14 19 32 / 0.65);
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.flecha svg {
+  width: 28px;
+  height: 28px;
+}
+
+.flecha.izq {
+  left: 0;
+  border-radius: 0 6px 6px 0;
+}
+
+.flecha.der {
+  right: 0;
+  border-radius: 6px 0 0 6px;
+}
+
+.carril:hover .flecha,
+.flecha:focus-visible {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .flecha {
+    display: none;
+  }
+}
+
+/* ── Tarjeta ── */
+.tarjeta {
+  position: relative;
+  border-radius: 6px;
+}
+
+/* La imagen es un botón que abre el detalle. */
+.portada {
+  all: unset;
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--superficie);
+  cursor: pointer;
+  container-type: inline-size;
+}
+
+.portada:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+.tarjeta-poster .portada {
+  aspect-ratio: 2 / 3;
+}
+
+.portada img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: filter 0.2s;
+}
+
+/* Degradado para que el texto se lea sobre cualquier foto. */
+.portada::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgb(11 16 34 / 0) 40%, rgb(11 16 34 / 0.9) 100%);
+}
+
+.tarjeta-poster .portada::after {
   background: linear-gradient(to bottom, rgb(11 16 34 / 0.55) 0%, rgb(11 16 34 / 0) 28%, rgb(11 16 34 / 0) 50%, rgb(11 16 34 / 0.92) 100%);
 }
 
-.poster-texto {
+.portada-texto {
   position: absolute;
   inset: 0;
   z-index: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: 8cqi;
+  justify-content: flex-end;
+  padding: 6cqi;
   color: #fff;
   font-family: 'Arial Narrow', 'Roboto Condensed', Helvetica, Arial, sans-serif;
   text-transform: uppercase;
 }
 
-.poster-texto span {
-  font-size: max(9px, 4.4cqi);
-  letter-spacing: 0.2em;
-  opacity: 0.8;
-}
-
-/* El tamaño depende del ancho de la tarjeta y el texto puede pasar a otra línea: nunca se corta. */
-.poster-texto strong {
-  border-top: 1px solid rgb(255 255 255 / 0.3);
-  padding-top: 6cqi;
-  font-size: min(10cqi, 30px);
+.portada-texto strong {
+  font-size: min(8cqi, 26px);
   line-height: 1;
   letter-spacing: 0.02em;
   overflow-wrap: break-word;
   text-wrap: balance;
 }
 
-.tarjeta h3 {
+/* En el póster: tipo y año arriba, línea y título abajo. */
+.tarjeta-poster .portada-texto {
+  justify-content: space-between;
+  padding: 8cqi;
+}
+
+.tarjeta-poster .portada-texto small {
+  font-size: max(9px, 4.4cqi);
+  letter-spacing: 0.2em;
+  opacity: 0.8;
+}
+
+.tarjeta-poster .portada-texto strong {
+  padding-top: 6cqi;
+  border-top: 1px solid rgb(255 255 255 / 0.3);
+  font-size: min(10cqi, 30px);
+}
+
+.info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 2px 0;
+}
+
+.info-texto {
+  display: grid;
+  min-width: 0;
+}
+
+.info h3,
+.info p {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.info h3 {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.info p {
+  color: var(--texto-suave);
+  font-size: 13px;
+}
+
+.fav {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin-left: auto;
+  border: 1.5px solid var(--texto-suave);
+  border-radius: 50%;
+  background: rgb(14 19 32 / 0.6);
+  cursor: pointer;
+}
+
+.fav svg {
+  width: 16px;
+  height: 16px;
+}
+
+.fav[aria-pressed='true'] {
+  border-color: var(--acento);
+  color: var(--acento);
+}
+
+/* Cinta ámbar en la esquina de los títulos que están en Mi lista (R7). */
+.tarjeta.guardado::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 12px;
+  z-index: 3;
+  width: 16px;
+  height: 24px;
+  background: var(--acento);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 76%, 0 100%);
+  filter: drop-shadow(0 2px 3px rgb(0 0 0 / 0.5));
+  pointer-events: none;
+}
+
+/* En pantallas con mouse, la info de las filas aparece sobre la imagen al pasar el cursor. */
+@media (hover: hover) {
+  .pista .info {
+    position: absolute;
+    inset: auto 0 0;
+    z-index: 2;
+    padding: 30px 10px 8px;
+    border-radius: 0 0 6px 6px;
+    background: linear-gradient(to top, rgb(14 19 32 / 0.97) 55%, rgb(14 19 32 / 0));
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s;
+  }
+
+  .pista .tarjeta:is(:hover, :focus-within) .info {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .tarjeta:is(:hover, :focus-within) .portada img {
+    filter: brightness(1.15);
+  }
+}
+
+/* ── Vista en cuadrícula (búsqueda, Mi lista, género) ── */
+.vista-cuadricula {
+  display: grid;
+  gap: 18px;
+  padding: 124px var(--margen-der) 48px var(--margen-izq);
+}
+
+.encabezado,
+.barra-genero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px 16px;
+}
+
+.barra-genero {
+  padding: 0 var(--margen-der) 0 var(--margen-izq);
+}
+
+.encabezado h2,
+.barra-genero h2 {
+  margin: 0;
+  font: 800 clamp(32px, 4vw, 46px) / 1 var(--titulos);
+  letter-spacing: 0.01em;
+}
+
+.encabezado span {
+  color: var(--texto-suave);
+  font-size: 14px;
+}
+
+.genero {
+  padding: 6px 10px;
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  background: var(--superficie);
+  color: var(--texto);
+  font: 500 14px var(--cuerpo);
+}
+
+.cuadricula {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 22px 10px;
+}
+
+.vacio {
+  padding: 40px 20px;
+  border: 1px dashed var(--borde);
+  border-radius: 8px;
+  color: var(--texto-suave);
+  text-align: center;
+}
+
+.vacio strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--texto);
+  font: 800 26px var(--titulos);
+}
+
+/* ── Ventana de detalle ── */
+.detalle {
+  width: min(860px, calc(100% - 24px));
+  max-height: calc(100% - 48px);
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: var(--superficie);
+  color: var(--texto);
+  box-shadow: 0 30px 80px rgb(0 0 0 / 0.7);
+}
+
+.detalle[open] {
+  animation: abrir 0.22s ease-out;
+}
+
+@keyframes abrir {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+}
+
+.detalle::backdrop {
+  background: rgb(5 8 15 / 0.78);
+}
+
+.detalle-portada {
+  position: relative;
+}
+
+.detalle-portada img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.detalle-portada::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, var(--superficie) 2%, rgb(23 30 46 / 0) 55%);
+}
+
+.detalle-encabezado {
+  position: absolute;
+  right: clamp(18px, 4vw, 40px);
+  bottom: clamp(14px, 3vw, 30px);
+  left: clamp(18px, 4vw, 40px);
+  z-index: 1;
+  display: grid;
+  gap: 14px;
+}
+
+.detalle-encabezado h2 {
+  margin: 0;
+  font: 900 clamp(40px, 6.5vw, 72px) / 0.9 var(--titulos);
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.cerrar {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--fondo);
+  cursor: pointer;
+}
+
+.cerrar svg {
+  width: 18px;
+  height: 18px;
+}
+
+.detalle-cuerpo {
+  display: grid;
+  gap: 26px;
+  padding: 6px clamp(18px, 4vw, 40px) 32px;
+}
+
+.detalle-columnas {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 24px;
+}
+
+.detalle-principal {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+.detalle-principal p {
+  max-width: 60ch;
+  margin: 0;
+  font-size: 15.5px;
+}
+
+.detalle-datos {
+  display: grid;
+  gap: 6px;
+  align-content: start;
   margin: 0;
   font-size: 14px;
 }
 
-.tarjeta p {
-  margin: 0;
-  font-size: 13px;
+.detalle-datos div {
+  display: flex;
+  gap: 6px;
+}
+
+.detalle-datos dt {
   color: var(--texto-suave);
 }
 
-@media (max-width: 420px) {
+.detalle-datos dt::after {
+  content: ':';
+}
+
+.detalle-datos dd {
+  margin: 0;
+}
+
+.detalle-cuerpo h3 {
+  margin: 0 0 12px;
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.parecidos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+/* ── Pantallas chicas ── */
+@media (max-width: 700px) {
+  .logo {
+    font-size: 24px;
+  }
+
+  .enlaces {
+    order: 3;
+    width: 100%;
+    gap: 18px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .hero-texto {
+    padding-top: 160px;
+  }
+
+  .hero p {
+    font-size: 15px;
+  }
+
+  .detalle-columnas {
+    grid-template-columns: 1fr;
+  }
+
   .cuadricula {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
   }
 }
