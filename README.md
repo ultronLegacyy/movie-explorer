@@ -64,9 +64,7 @@ de los eventos (abrir un título, marcar favorito, cambiar de vista) con funcion
 
 ## Documentación
 
-- [`docs/DOCUMENTACION.md`](docs/DOCUMENTACION.md): de qué trata, tecnologías, cómo correrlo y cómo funciona.
-- [`docs/DISENO.md`](docs/DISENO.md): partes de la interfaz, componentes, imágenes y estilo.
-- [`docs/GUION-DEMO.md`](docs/GUION-DEMO.md): guion para la demostración en clase.
+- [`docs/boceto-streaming.html`](docs/boceto-streaming.html) y [`docs/boceto-streaming-v2.html`](docs/boceto-streaming-v2.html): bocetos del diseño (se abren en el navegador).
 
 ## Cómo trabajamos
 
