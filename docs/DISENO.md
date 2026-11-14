@@ -4,14 +4,14 @@ La app usa la estructura de las plataformas de streaming: un banner destacado, f
 por categoría y el detalle en una ventana.
 
 > Tomamos la estructura de Netflix, pero no su marca: no usamos su nombre, su logo ni su rojo. La
-> app se llama *Movie Explorer* y su color de acento es ámbar.
+> app se llama *Netflis* y su color de acento es ámbar.
 
 ## Partes de la página
 
 | Parte              | Qué hace                                                                                             | Requisito | Componente       |
 | ------------------ | ---------------------------------------------------------------------------------------------------- | --------- | ---------------- |
 | Barra superior     | Logo, enlaces Inicio / Series / Películas / Mi lista y una lupa que despliega el buscador             | R3, R4, R7 | `Navbar`        |
-| Banner destacado   | Foto grande de un título con tipo, año, duración, género, sinopsis y botones                          | R5, R6    | `Hero`           |
+| Banner destacado   | Foto grande con tipo, año, duración, género, sinopsis y botones; en Inicio rota cada 5 s (carrusel)     | R5, R6    | `Hero`           |
 | Filas horizontales | Mi lista, Series, Películas y una fila por género (con 3 títulos o más), con scroll y flechas         | R1, R2    | `Fila`           |
 | Tarjeta            | Foto con el título encima; abajo título, año, género y botón +                                        | R2, R6    | `Tarjeta`        |
 | Series / Películas | Filtra por tipo y agrega una lista de géneros; al elegir uno, cambia a cuadrícula                     | R4        | `SelectorGenero` |

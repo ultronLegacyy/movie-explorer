@@ -18,7 +18,7 @@ si les acomoda otra división.
 
 ## 1. Presentación (Integrante 1, 1 min)
 
-- "Hicimos **Movie Explorer**, un explorador de películas y series con **React** y **Vite**."
+- "Hicimos **Netflis**, un explorador de películas y series con **React** y **Vite**."
 - "No usa backend, base de datos ni API: los 20 títulos están en un arreglo de objetos y las fotos
   están dentro del proyecto."
 - "La interfaz sigue el estilo de las plataformas de streaming: banner, filas por categoría y el
