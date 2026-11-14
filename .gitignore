@@ -35,3 +35,6 @@ Thumbs.db
 
 # Configuración local de herramientas (cada quien la suya)
 .claude/
+
+# Documentos de trabajo del equipo (se quedan en cada computadora)
+docs/*.md
