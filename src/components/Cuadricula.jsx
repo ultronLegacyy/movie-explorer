@@ -7,9 +7,6 @@ function Cuadricula({ titulo, items, extra, vacio, favoritos, onFavorito, onAbri
     <section className="vista-cuadricula">
       <div className="encabezado">
         <h2>{titulo}</h2>
-        <span>
-          {items.length} {items.length === 1 ? 'título' : 'títulos'}
-        </span>
         {extra}
       </div>
 

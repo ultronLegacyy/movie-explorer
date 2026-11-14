@@ -34,7 +34,15 @@ function Navbar({ vista, onVista, busqueda, onBusqueda }) {
   return (
     <nav className={`nav${solida ? ' solida' : ''}`}>
       <h1 className="logo">
-        Movie<b>·</b>Explorer
+        <button
+          type="button"
+          onClick={() => {
+            setBuscadorAbierto(false)
+            onVista('inicio')
+          }}
+        >
+          Net<b>flis</b>
+        </button>
       </h1>
 
       <div className="enlaces">
