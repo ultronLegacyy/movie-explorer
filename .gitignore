@@ -38,3 +38,6 @@ Thumbs.db
 
 # Documentos de trabajo del equipo (se quedan en cada computadora)
 docs/*.md
+
+# Archivos de bloqueo de LibreOffice / ONLYOFFICE
+.~lock.*#
