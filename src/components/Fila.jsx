@@ -15,9 +15,7 @@ function Fila({ titulo, items, formato = 'horizontal', favoritos, onFavorito, on
 
   return (
     <section className="fila">
-      <h2>
-        {titulo} <small>{items.length}</small>
-      </h2>
+      <h2>{titulo}</h2>
       <div className="carril">
         <button type="button" className="flecha izq" onClick={() => mover(-1)} aria-label={`Anteriores en ${titulo}`}>
           <IconoIzquierda />

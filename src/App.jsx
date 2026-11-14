@@ -8,8 +8,8 @@ import SelectorGenero from './components/SelectorGenero.jsx'
 import ModalDetalle from './components/ModalDetalle.jsx'
 import { generosDe, normalizar } from './utils.js'
 
-// Título que aparece en el banner de cada vista.
-const DESTACADO = { inicio: 'interstellar', series: 'stranger-things', peliculas: 'dune' }
+// Título fijo del banner en Series y Películas.
+const DESTACADO = { series: 'stranger-things', peliculas: 'dune' }
 const CLAVE_FAVORITOS = 'favoritos'
 
 const porId = (id) => catalogo.find((item) => item.id === id)
@@ -107,7 +107,8 @@ function App() {
         />
       )
     } else {
-      const destacado = porId(DESTACADO[vista])
+      // En Inicio el banner rota por todo el catálogo; en Series y Películas muestra uno fijo.
+      const destacados = vista === 'inicio' ? catalogo : [porId(DESTACADO[vista])]
       // Una fila por género, solo si tiene al menos 3 títulos
       const filasGenero = generosDe(base)
         .map((g) => ({ genero: g, items: base.filter((item) => item.genres.includes(g)) }))
@@ -116,8 +117,10 @@ function App() {
       contenido = (
         <>
           <Hero
-            item={destacado}
-            esFavorito={favoritos.includes(destacado.id)}
+            key={vista}
+            items={destacados}
+            pausado={abierto !== null}
+            favoritos={favoritos}
             onFavorito={alternarFavorito}
             onAbrir={setAbierto}
           />
