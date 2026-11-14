@@ -1,4 +1,4 @@
-# Movie Explorer
+# Netflis
 
 Explorador de películas y series hecho con **React** (JavaScript, HTML y CSS) y **Vite**.
 
@@ -46,7 +46,7 @@ src/
 ├── App.jsx               Estado (vista, búsqueda, género, favoritos, título abierto) y qué se muestra
 ├── components/
 │   ├── Navbar.jsx        Logo, enlaces y buscador
-│   ├── Hero.jsx          Banner con el título destacado
+│   ├── Hero.jsx          Banner; en Inicio rota cada 5 s por el catálogo
 │   ├── Fila.jsx          Carril horizontal de tarjetas con flechas
 │   ├── Tarjeta.jsx       Imagen, título, año, género y botón de Mi lista
 │   ├── BotonFavorito.jsx Agrega o quita de Mi lista
@@ -64,8 +64,7 @@ de los eventos (abrir un título, marcar favorito, cambiar de vista) con funcion
 
 ## Documentación
 
-- [`docs/DISENO.md`](docs/DISENO.md): partes de la interfaz, componentes, imágenes y estilo.
-- [`docs/GUION-DEMO.md`](docs/GUION-DEMO.md): guion para la demostración en clase.
+- [`docs/boceto-streaming.html`](docs/boceto-streaming.html) y [`docs/boceto-streaming-v2.html`](docs/boceto-streaming-v2.html): bocetos del diseño (se abren en el navegador).
 
 ## Cómo trabajamos
 
