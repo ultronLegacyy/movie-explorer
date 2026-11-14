@@ -1,5 +1,4 @@
-# Movie Explorer
-
+# Netflis
 Explorador de películas y series hecho con **React** (JavaScript, HTML y CSS) y **Vite**.
 
 No usa backend ni API: el catálogo es un arreglo de objetos en `src/data/catalogo.js` y las fotos
